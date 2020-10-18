@@ -27,7 +27,7 @@ variable "region_azs" {
 
 variable "domain_access_ip" {
   description = ""
-  default = "89.138.129.1/32"
+  default = "<my-ip>"
 }
 
 # --------------------- Use only once ----------------------------- #
