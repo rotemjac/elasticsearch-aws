@@ -1,0 +1,43 @@
+# Subnet #
+resource "aws_subnet" "data_tier" {
+  count             =  var.data_tier_number_of_subnets
+  vpc_id            =  aws_vpc.base_vpc.id
+  cidr_block        =  cidrsubnet(var.data_tier_subnet_cidr, 2, count.index)
+  availability_zone =  element(var.region_azs, count.index)
+
+  tags              =  merge(local.data_tier_tags, map("Name", format("%s-subnet-%s", var.data_tier_name , count.index)))
+}
+
+
+# -------------- Routing -------------- #
+# Subnet <--> Route table #
+resource "aws_route_table_association" "data_tier_rt_as" {
+  count          = var.data_tier_number_of_subnets
+  subnet_id      = element(aws_subnet.data_tier.*.id, count.index)
+  route_table_id = aws_route_table.data_tier_rt.id
+}
+
+resource "aws_route_table" "data_tier_rt" {
+  vpc_id           = aws_vpc.base_vpc.id
+  propagating_vgws = var.data_tier_propagating_vgws
+
+  tags              = "${merge(local.data_tier_tags, map("Name", format("%s-route_table", var.data_tier_name)))}"
+}
+
+
+resource "aws_route" "data_tier_route_to_natgw" {
+  route_table_id   = aws_route_table.data_tier_rt.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id = aws_nat_gateway.natgw[2].id
+}
+
+
+
+
+# -------------- Locals -------------- #
+locals {
+  data_tier_tags = {
+    "Environment" = var.environment
+    "Tier"        = var.data_tier_name
+  }
+}

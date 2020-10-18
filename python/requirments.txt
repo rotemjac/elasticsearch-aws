@@ -1,0 +1,4 @@
+boto3==1.15.18
+requests==2.24.0
+elasticsearch==7.9.1
+requests-aws4auth==1.0.1
